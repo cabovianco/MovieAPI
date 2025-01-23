@@ -5,7 +5,7 @@ import com.cabovianco.movieapi.repository.entity.MovieEntity;
 
 public class EntityModelMapper {
 
-    public static MovieEntity modelToEntity(Movie movie) {
+    public static MovieEntity toEntity(Movie movie) {
         MovieEntity entity = new MovieEntity();
         entity.setId(movie.getId());
         entity.setName(movie.getName());
@@ -16,7 +16,7 @@ public class EntityModelMapper {
         return entity;
     }
 
-    public static Movie entityToModel(MovieEntity movie) {
+    public static Movie toModel(MovieEntity movie) {
         Movie model = new Movie();
         model.setId(movie.getId());
         model.setName(movie.getName());

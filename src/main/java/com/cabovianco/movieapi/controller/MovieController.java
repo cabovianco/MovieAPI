@@ -1,8 +1,8 @@
 package com.cabovianco.movieapi.controller;
 
-import com.cabovianco.movieapi.exception.NullParameterException;
 import com.cabovianco.movieapi.model.Movie;
 import com.cabovianco.movieapi.service.MovieService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@RequestMapping("/api/movies")
 public class MovieController {
 
     private final MovieService service;
@@ -18,69 +19,46 @@ public class MovieController {
         this.service = service;
     }
 
-    @GetMapping("/movies")
+    @GetMapping
     public ResponseEntity<List<Movie>> getMovies() {
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(service.getMovies());
+        return ResponseEntity.ok(service.getMovies());
     }
 
-    @GetMapping("/movie")
+    @GetMapping("/name")
     public ResponseEntity<Movie> getMovieByName(@RequestParam String name) {
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(service.getMovieByName(name));
+        return ResponseEntity.ok(service.getMovieByName(name));
     }
 
-    @GetMapping("/movies/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<Movie> getMovieById(@PathVariable Long id) {
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(service.getMovieById(id));
+        return ResponseEntity.ok(service.getMovieById(id));
     }
 
-    @GetMapping("/movies/genres")
+    @GetMapping("/genre")
     public ResponseEntity<List<Movie>> getMoviesByGenre(@RequestParam String genre) {
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(service.getMoviesByGenre(genre));
+        return ResponseEntity.ok(service.getMoviesByGenre(genre));
     }
 
-    @GetMapping("/movies/directors")
+    @GetMapping("/director")
     public ResponseEntity<List<Movie>> getMoviesByDirector(@RequestParam String director) {
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(service.getMoviesByDirector(director));
+        return ResponseEntity.ok(service.getMoviesByDirector(director));
     }
 
-    @PostMapping("/movies")
-    public ResponseEntity<Object> addMovie(@RequestBody Movie movie) {
-        try {
-            service.addMovie(movie);
-            return ResponseEntity
-                    .status(HttpStatus.CREATED)
-                    .body(null);
-        } catch (NullParameterException e) {
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(e.getMessage());
-        }
+    @PostMapping
+    public ResponseEntity<Movie> addMovie(@Valid @RequestBody Movie movie) {
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(service.addMovie(movie));
     }
 
-    @DeleteMapping("/movie")
-    public ResponseEntity<Void> deleteMovieByName(@RequestParam String name) {
-        service.deleteMovieByName(name);
-        return ResponseEntity
-                .status(HttpStatus.NO_CONTENT)
-                .body(null);
+    @PutMapping("/{id}")
+    public ResponseEntity<Movie> updateMovie(@PathVariable Long id, @Valid @RequestBody Movie movie) {
+        return ResponseEntity.ok(service.updateMovie(id, movie));
     }
 
-    @DeleteMapping("/movies/{id}")
-    public ResponseEntity<Void> deleteMovieById(@PathVariable Long id) {
-        service.deleteMovieById(id);
-        return ResponseEntity
-                .status(HttpStatus.NO_CONTENT)
-                .body(null);
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Movie> deleteMovieById(@PathVariable Long id) {
+        return ResponseEntity.ok(service.deleteMovieById(id));
     }
 
 }

@@ -1,21 +1,19 @@
 package com.cabovianco.movieapi.service;
 
 import com.cabovianco.movieapi.exception.MovieNotFoundException;
-import com.cabovianco.movieapi.exception.NullParameterException;
 import com.cabovianco.movieapi.model.Movie;
 import com.cabovianco.movieapi.repository.MovieRepository;
 import com.cabovianco.movieapi.repository.entity.MovieEntity;
 import com.cabovianco.movieapi.util.EntityModelMapper;
-import jakarta.transaction.Transactional;
+import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static com.cabovianco.movieapi.util.EntityModelMapper.entityToModel;
-import static com.cabovianco.movieapi.util.EntityModelMapper.modelToEntity;
+import static com.cabovianco.movieapi.util.EntityModelMapper.toModel;
+import static com.cabovianco.movieapi.util.EntityModelMapper.toEntity;
 
 @Service
 public class MovieServiceImpl implements MovieService {
@@ -31,33 +29,33 @@ public class MovieServiceImpl implements MovieService {
     public List<Movie> getMovies() {
         return repository.findAllMovies()
                 .stream()
-                .map(EntityModelMapper::entityToModel)
+                .map(EntityModelMapper::toModel)
                 .collect(Collectors.toList());
     }
 
     @Override
+    @SneakyThrows
     public Movie getMovieByName(String name) {
-        Optional<MovieEntity> movie = repository.findMovieByName(name);
-        if (movie.isEmpty())
-            throw new MovieNotFoundException();
+        MovieEntity movie = repository.findMovieByName(name)
+                .orElseThrow(MovieNotFoundException::new);
 
-        return entityToModel(movie.get());
+        return toModel(movie);
     }
 
     @Override
+    @SneakyThrows
     public Movie getMovieById(Long id) {
-        Optional<MovieEntity> movie = repository.findMovieById(id);
-        if (movie.isEmpty())
-            throw new MovieNotFoundException();
+        MovieEntity movie = repository.findById(id)
+                .orElseThrow(MovieNotFoundException::new);
 
-        return entityToModel(movie.get());
+        return toModel(movie);
     }
 
     @Override
     public List<Movie> getMoviesByGenre(String genre) {
         return repository.findMoviesByGenre(genre)
                 .stream()
-                .map(EntityModelMapper::entityToModel)
+                .map(EntityModelMapper::toModel)
                 .collect(Collectors.toList());
     }
 
@@ -65,37 +63,39 @@ public class MovieServiceImpl implements MovieService {
     public List<Movie> getMoviesByDirector(String director) {
         return repository.findMoviesByDirector(director)
                 .stream()
-                .map(EntityModelMapper::entityToModel)
+                .map(EntityModelMapper::toModel)
                 .collect(Collectors.toList());
     }
 
     @Override
-    @Transactional
-    public void addMovie(Movie movie) throws NullParameterException {
-        if (movie.getName() == null || movie.getGenre() == null ||
-                movie.getDirector() == null || movie.getTimeInMinutes() == null)
-            throw new NullParameterException();
-
-        MovieEntity entity = modelToEntity(movie);
-        repository.addMovie(entity.getName(), entity.getGenre(), entity.getDirector(), entity.getTimeInMinutes());
+    @SneakyThrows
+    public Movie addMovie(Movie movie) {
+        return toModel(repository.save(toEntity(movie)));
     }
 
     @Override
-    @Transactional
-    public void deleteMovieByName(String name) {
-        if (repository.findMovieByName(name).isEmpty())
-            throw new MovieNotFoundException();
+    @SneakyThrows
+    public Movie updateMovie(Long id, Movie movie) {
+        MovieEntity entity = repository.findById(id)
+                .orElseThrow(MovieNotFoundException::new);
 
-        repository.deleteMovieByName(name);
+        MovieEntity updatedEntity = toEntity(movie);
+        entity.setName(updatedEntity.getName());
+        entity.setGenre(updatedEntity.getGenre());
+        entity.setDirector(updatedEntity.getDirector());
+        entity.setTimeInMinutes(updatedEntity.getTimeInMinutes());
+
+        return toModel(repository.save(entity));
     }
 
     @Override
-    @Transactional
-    public void deleteMovieById(Long id) {
-        if (repository.findMovieById(id).isEmpty())
-            throw new MovieNotFoundException();
+    @SneakyThrows
+    public Movie deleteMovieById(Long id) {
+        MovieEntity movie = repository.findById(id)
+                .orElseThrow(MovieNotFoundException::new);
 
-        repository.deleteMovieById(id);
+        repository.delete(movie);
+        return toModel(movie);
     }
 
 }

@@ -1,6 +1,5 @@
 package com.cabovianco.movieapi.service;
 
-import com.cabovianco.movieapi.exception.NullParameterException;
 import com.cabovianco.movieapi.model.Movie;
 
 import java.util.List;
@@ -17,10 +16,10 @@ public interface MovieService {
 
     List<Movie> getMoviesByDirector(String director);
 
-    void addMovie(Movie movie) throws NullParameterException;
+    Movie addMovie(Movie movie);
 
-    void deleteMovieByName(String name);
+    Movie updateMovie(Long id, Movie movie);
 
-    void deleteMovieById(Long id);
+    Movie deleteMovieById(Long id);
 
 }
